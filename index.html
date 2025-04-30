@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam Portal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Available Exams</h1>
+  <ul id="exam-list"></ul>
+
+  <script>
+    fetch('data/exams.json')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('exam-list');
+        Object.keys(data).forEach(key => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="exam.html?examId=${key}">${data[key].title}</a>`;
+          list.appendChild(li);
+        });
+      });
+  </script>
+</body>
+</html>

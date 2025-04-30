@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+</head>
+<body>
+  <script>
+    const password = prompt("Enter admin password:");
+    if (password !== "admin123") {
+      document.body.innerHTML = "<h1>Access Denied</h1>";
+    }
+  </script>
+  <h1>Admin Panel</h1>
+  <textarea id="examData" cols="80" rows="20"></textarea>
+  <button onclick="saveData()">Save</button>
+
+  <script>
+    fetch('data/exams.json')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('examData').value = JSON.stringify(data, null, 2);
+      });
+
+    function saveData() {
+      alert("To implement saving, connect to backend or save to file manually.");
+    }
+  </script>
+</body>
+</html>
