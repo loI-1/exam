@@ -1,0 +1,18 @@
+{
+  "math1": {
+    "title": "Math Exam 1",
+    "questions": [
+      {
+        "question": "What is 2 + 2?",
+        "type": "multiple-choice",
+        "options": ["3", "4", "5"],
+        "correct": "4"
+      },
+      {
+        "question": "Solve for x: 3x = 12",
+        "type": "text",
+        "correct": "4"
+      }
+    ]
+  }
+}
