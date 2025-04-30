@@ -1,3 +1,4 @@
+<script>
 const urlParams = new URLSearchParams(window.location.search);
 const examId = urlParams.get('examId');
 fetch('data/exams.json')
@@ -38,3 +39,4 @@ fetch('data/exams.json')
       document.getElementById('result').innerHTML = `<h2>Score: ${score} / ${exam.questions.length}</h2>`;
     }
   });
+</script>
