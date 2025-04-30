@@ -6,120 +6,140 @@
   <title>Exam</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .question-card { margin-bottom: 1.5rem; }
+    .blank-input { width: 80px; display: inline-block; margin: 0 5px; border-bottom: 1px solid #000; }
   </style>
 </head>
 <body class="bg-light">
-<div class="container py-4">
-  <h2 id="examTitle"></h2>
-  <div id="examContainer"></div>
-  <button class="btn btn-success mt-4" onclick="submitExam()">Submit</button>
-  <div id="result" class="mt-3"></div>
-</div>
+  <div class="container py-4">
+    <h1 class="mb-4">📝 Exam Viewer</h1>
+    <div id="examContainer"></div>
+  </div>
 
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const examId = urlParams.get('examId');
-let examData = null;
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('examId');
 
-fetch(`exams/${examId}.exm`)
-  .then(res => {
-    if (!res.ok) throw new Error("Exam not found");
-    return res.json();
-  })
-  .then(data => {
-    examData = data;
-    renderExam();
-  })
-  .catch(err => {
-    document.getElementById('examContainer').innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
-  });
+    if (!examId) {
+      document.getElementById('examContainer').innerHTML = '<div class="alert alert-danger">Missing examId in URL</div>';
+    } else {
+      fetch(`exams/${examId}.exm`)
+        .then(res => {
+          if (!res.ok) throw new Error('Exam not found');
+          return res.json();
+        })
+        .then(data => renderExam(data))
+        .catch(err => {
+          document.getElementById('examContainer').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+        });
+    }
 
-function renderExam() {
-  document.getElementById("examTitle").innerText = examData.exam_name;
-  const container = document.getElementById("examContainer");
-  container.innerHTML = '';
+    function renderExam(exam) {
+      const container = document.getElementById('examContainer');
+      container.innerHTML = `
+        <h3>${exam.exam_name || 'Untitled Exam'}</h3>
+        <p><strong>Time Limit:</strong> ${exam.time_limit_minutes} minutes</p>
+      `;
 
-  examData.categories.forEach((cat, ci) => {
-    const catDiv = document.createElement('div');
-    catDiv.innerHTML = `<h4>${cat.name}</h4>`;
-    container.appendChild(catDiv);
+      exam.categories.forEach((cat, ci) => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'mb-4';
+        catDiv.innerHTML = `<h4>${cat.name}</h4>`;
+        
+        cat.questions.forEach((q, qi) => {
+          const qDiv = document.createElement('div');
+          qDiv.className = 'card mb-3';
+          qDiv.innerHTML = `<div class="card-header"><strong>Q${qi + 1}:</strong> ${renderQuestionText(q)}</div>`;
 
-    cat.questions.forEach((q, qi) => {
-      const qDiv = document.createElement('div');
-      qDiv.className = 'card question-card';
-      qDiv.innerHTML = `<div class="card-body">
-        <p><strong>Q${qi + 1}:</strong> ${q.question}</p>
-        <div id="q-${ci}-${qi}"></div>
-      </div>`;
-      container.appendChild(qDiv);
-      renderInput(q, ci, qi);
-    });
-  });
-}
+          const body = document.createElement('div');
+          body.className = 'card-body';
 
-function renderInput(q, ci, qi) {
-  const target = document.getElementById(`q-${ci}-${qi}`);
-  if (q.type === 'multiple_choice') {
-    q.options.forEach((opt, i) => {
-      const id = `q${ci}_${qi}_opt${i}`;
-      target.innerHTML += `
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="q${ci}_${qi}" id="${id}" value="${i}">
-          <label class="form-check-label" for="${id}">${opt}</label>
-        </div>`;
-    });
-  } else if (q.type === 'multiple_select') {
-    q.options.forEach((opt, i) => {
-      const id = `q${ci}_${qi}_opt${i}`;
-      target.innerHTML += `
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="q${ci}_${qi}" id="${id}" value="${i}">
-          <label class="form-check-label" for="${id}">${opt}</label>
-        </div>`;
-    });
-  } else if (q.type === 'short_answer') {
-    target.innerHTML += `<input class="form-control" type="text" name="q${ci}_${qi}">`;
-  } else if (q.type === 'true_false') {
-    ['True', 'False'].forEach((val, i) => {
-      const id = `q${ci}_${qi}_tf${i}`;
-      target.innerHTML += `
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="q${ci}_${qi}" id="${id}" value="${val === 'True'}">
-          <label class="form-check-label" for="${id}">${val}</label>
-        </div>`;
-    });
-  }
-  // You can add more types like essay, matching, etc., if needed
-}
+          switch (q.type) {
+            case 'multiple_choice':
+              q.options.forEach((opt, i) => {
+                const id = `q${ci}-${qi}-opt${i}`;
+                body.innerHTML += `
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="q${ci}-${qi}" id="${id}">
+                    <label class="form-check-label" for="${id}">${opt}</label>
+                  </div>`;
+              });
+              break;
 
-function submitExam() {
-  let score = 0, total = 0;
-  examData.categories.forEach((cat, ci) => {
-    cat.questions.forEach((q, qi) => {
-      total += q.points || 1;
-      const name = `q${ci}_${qi}`;
-      let correct = false;
-      if (q.type === 'multiple_choice') {
-        const selected = document.querySelector(`input[name="${name}"]:checked`);
-        correct = selected && parseInt(selected.value) === q.correct_option_index;
-      } else if (q.type === 'multiple_select') {
-        const selected = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(i => parseInt(i.value));
-        correct = JSON.stringify(selected.sort()) === JSON.stringify((q.correct_option_indexes || []).sort());
-      } else if (q.type === 'short_answer') {
-        const input = document.querySelector(`input[name="${name}"]`);
-        correct = input && input.value.trim().toLowerCase() === q.correct_answer?.toLowerCase();
-      } else if (q.type === 'true_false') {
-        const selected = document.querySelector(`input[name="${name}"]:checked`);
-        correct = selected && (selected.value === String(q.correct_answer));
+            case 'multiple_select':
+              q.options.forEach((opt, i) => {
+                const id = `q${ci}-${qi}-opt${i}`;
+                body.innerHTML += `
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="q${ci}-${qi}" id="${id}">
+                    <label class="form-check-label" for="${id}">${opt}</label>
+                  </div>`;
+              });
+              break;
+
+            case 'short_answer':
+              body.innerHTML += `<input type="text" class="form-control" placeholder="Your answer">`;
+              break;
+
+            case 'true_false':
+              body.innerHTML += `
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="q${ci}-${qi}" id="tf-true-${ci}-${qi}">
+                  <label class="form-check-label" for="tf-true-${ci}-${qi}">True</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="q${ci}-${qi}" id="tf-false-${ci}-${qi}">
+                  <label class="form-check-label" for="tf-false-${ci}-${qi}">False</label>
+                </div>`;
+              break;
+
+            case 'fill_in_blank':
+              body.innerHTML += renderFillInBlank(q);
+              break;
+
+            case 'matching':
+              q.pairs.forEach((pair, i) => {
+                body.innerHTML += `
+                  <div class="mb-2">
+                    <strong>${pair.left}</strong>
+                    <select class="form-select mt-1">
+                      <option value="">Select match</option>
+                      ${q.pairs.map(p => `<option>${p.right}</option>`).join('')}
+                    </select>
+                  </div>`;
+              });
+              break;
+
+            case 'ordering':
+              q.options.forEach(opt => {
+                body.innerHTML += `
+                  <div class="mb-1">
+                    <input class="form-control" value="${opt}" readonly>
+                  </div>`;
+              });
+              break;
+
+            case 'essay':
+              body.innerHTML += `<textarea class="form-control" rows="5" placeholder="Write your essay (Max ${q.max_length_words} words)"></textarea>`;
+              break;
+
+            default:
+              body.innerHTML += `<em>Unknown question type</em>`;
+          }
+
+          qDiv.appendChild(body);
+          catDiv.appendChild(qDiv);
+        });
+
+        container.appendChild(catDiv);
+      });
+    }
+
+    function renderQuestionText(q) {
+      if (q.type === 'fill_in_blank') {
+        return q.question.replace(/\[\[(blank_\d+)\]\]/g, `<input type="text" class="blank-input" placeholder="...">`);
       }
-      if (correct) score += q.points || 1;
-    });
-  });
-
-  document.getElementById("result").innerHTML = `
-    <div class="alert alert-info">Score: ${score} / ${total}</div>`;
-}
-</script>
+      return q.question;
+    }
+  </script>
 </body>
 </html>
