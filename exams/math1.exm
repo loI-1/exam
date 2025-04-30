@@ -1,1 +1,157 @@
-
+{
+  "exam_name": "",
+  "time_limit_minutes": 30,
+  "categories": [
+    {
+      "name": "TracNghiemTrucQuan",
+      "questions": [
+        {
+          "type": "multiple_choice",
+          "question": "1 + 1 =",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "whoknow?"
+          ],
+          "correct_option_index": 1,
+          "correct_option_indexes": [],
+          "correct_answer": true,
+          "correct_answers": {},
+          "pairs": [
+            {
+              "left": "",
+              "right": ""
+            }
+          ],
+          "correct_order": [
+            "Option 1",
+            "Option 2"
+          ],
+          "max_length_words": 500,
+          "difficulty": "easy",
+          "points": 1,
+          "explanation": "1 + 1 = 2 idiot"
+        },
+        {
+          "type": "matching",
+          "question": "New question",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "correct_option_index": 0,
+          "correct_option_indexes": [],
+          "correct_answer": true,
+          "correct_answers": {},
+          "pairs": [
+            {
+              "left": "1 + 2",
+              "right": "3"
+            },
+            {
+              "left": "3 + 4",
+              "right": "7"
+            },
+            {
+              "left": "3 + 5",
+              "right": "8"
+            }
+          ],
+          "correct_order": [],
+          "max_length_words": 500,
+          "difficulty": "easy",
+          "points": 3,
+          "explanation": ""
+        },
+        {
+          "type": "ordering",
+          "question": "From small(up) to large(down)",
+          "options": [
+            "1+3",
+            "4+2"
+          ],
+          "correct_option_index": 0,
+          "correct_option_indexes": [],
+          "correct_answer": true,
+          "correct_answers": {},
+          "pairs": [
+            {
+              "left": "",
+              "right": ""
+            }
+          ],
+          "correct_order": [
+            "1+3",
+            "4+2"
+          ],
+          "max_length_words": 500,
+          "difficulty": "easy",
+          "points": 1,
+          "explanation": ""
+        },
+        {
+          "type": "fill_in_blank",
+          "question": "CalcULATE 1 + 3 - 4 + 2: 1 + 3 =  [[blank_1]] - 4 =  [[blank_2]] + 2 =  [[blank_3]]",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "correct_option_index": 0,
+          "correct_option_indexes": [],
+          "correct_answer": true,
+          "correct_answers": {
+            "blank_1": [
+              "4"
+            ],
+            "blank_2": [
+              "0"
+            ],
+            "blank_3": [
+              "2"
+            ]
+          },
+          "pairs": [
+            {
+              "left": "",
+              "right": ""
+            }
+          ],
+          "correct_order": [],
+          "max_length_words": 500,
+          "difficulty": "easy",
+          "points": 1,
+          "explanation": ""
+        }
+      ]
+    },
+    {
+      "name": "TuLuan",
+      "questions": [
+        {
+          "type": "essay",
+          "question": "TrinhBayDinhLiPytagore",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "correct_option_index": 0,
+          "correct_option_indexes": [],
+          "correct_answer": true,
+          "correct_answers": {},
+          "pairs": [
+            {
+              "left": "",
+              "right": ""
+            }
+          ],
+          "correct_order": [],
+          "max_length_words": 500,
+          "difficulty": "easy",
+          "points": 5,
+          "explanation": ""
+        }
+      ]
+    }
+  ]
+}
