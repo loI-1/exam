@@ -1,15 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Take Exam</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .question-card { margin-bottom: 1.5rem; }
+  </style>
 </head>
-<body>
-  <h1 id="exam-title"></h1>
-  <form id="exam-form"></form>
-  <div id="result"></div>
-  <script src="script.js"></script>
+<body class="bg-light">
+<div class="container py-4">
+  <h2 id="examTitle"></h2>
+  <div id="examContainer"></div>
+  <button class="btn btn-success mt-4" onclick="submitExam()">Submit</button>
+  <div id="result" class="mt-3"></div>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const examId = urlParams.get('examId');
+let examData = null;
+
+fetch(`exams/${examId}.exm`)
+  .then(res => {
+    if (!res.ok) throw new Error("Exam not found");
+    return res.json();
+  })
+  .then(data => {
+    examData = data;
+    renderExam();
+  })
+  .catch(err => {
+    document.getElementById('examContainer').innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+  });
+
+function renderExam() {
+  document.getElementById("examTitle").innerText = examData.exam_name;
+  const container = document.getElementById("examContainer");
+  container.innerHTML = '';
+
+  examData.categories.forEach((cat, ci) => {
+    const catDiv = document.createElement('div');
+    catDiv.innerHTML = `<h4>${cat.name}</h4>`;
+    container.appendChild(catDiv);
+
+    cat.questions.forEach((q, qi) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'card question-card';
+      qDiv.innerHTML = `<div class="card-body">
+        <p><strong>Q${qi + 1}:</strong> ${q.question}</p>
+        <div id="q-${ci}-${qi}"></div>
+      </div>`;
+      container.appendChild(qDiv);
+      renderInput(q, ci, qi);
+    });
+  });
+}
+
+function renderInput(q, ci, qi) {
+  const target = document.getElementById(`q-${ci}-${qi}`);
+  if (q.type === 'multiple_choice') {
+    q.options.forEach((opt, i) => {
+      const id = `q${ci}_${qi}_opt${i}`;
+      target.innerHTML += `
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="q${ci}_${qi}" id="${id}" value="${i}">
+          <label class="form-check-label" for="${id}">${opt}</label>
+        </div>`;
+    });
+  } else if (q.type === 'multiple_select') {
+    q.options.forEach((opt, i) => {
+      const id = `q${ci}_${qi}_opt${i}`;
+      target.innerHTML += `
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="q${ci}_${qi}" id="${id}" value="${i}">
+          <label class="form-check-label" for="${id}">${opt}</label>
+        </div>`;
+    });
+  } else if (q.type === 'short_answer') {
+    target.innerHTML += `<input class="form-control" type="text" name="q${ci}_${qi}">`;
+  } else if (q.type === 'true_false') {
+    ['True', 'False'].forEach((val, i) => {
+      const id = `q${ci}_${qi}_tf${i}`;
+      target.innerHTML += `
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="q${ci}_${qi}" id="${id}" value="${val === 'True'}">
+          <label class="form-check-label" for="${id}">${val}</label>
+        </div>`;
+    });
+  }
+  // You can add more types like essay, matching, etc., if needed
+}
+
+function submitExam() {
+  let score = 0, total = 0;
+  examData.categories.forEach((cat, ci) => {
+    cat.questions.forEach((q, qi) => {
+      total += q.points || 1;
+      const name = `q${ci}_${qi}`;
+      let correct = false;
+      if (q.type === 'multiple_choice') {
+        const selected = document.querySelector(`input[name="${name}"]:checked`);
+        correct = selected && parseInt(selected.value) === q.correct_option_index;
+      } else if (q.type === 'multiple_select') {
+        const selected = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(i => parseInt(i.value));
+        correct = JSON.stringify(selected.sort()) === JSON.stringify((q.correct_option_indexes || []).sort());
+      } else if (q.type === 'short_answer') {
+        const input = document.querySelector(`input[name="${name}"]`);
+        correct = input && input.value.trim().toLowerCase() === q.correct_answer?.toLowerCase();
+      } else if (q.type === 'true_false') {
+        const selected = document.querySelector(`input[name="${name}"]:checked`);
+        correct = selected && (selected.value === String(q.correct_answer));
+      }
+      if (correct) score += q.points || 1;
+    });
+  });
+
+  document.getElementById("result").innerHTML = `
+    <div class="alert alert-info">Score: ${score} / ${total}</div>`;
+}
+</script>
 </body>
 </html>
